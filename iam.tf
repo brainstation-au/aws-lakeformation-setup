@@ -78,7 +78,7 @@ resource "aws_iam_role_policy_attachment" "lakeformation_admin" {
   policy_arn = "arn:aws:iam::aws:policy/${each.key}"
 }
 
-resource "aws_iam_role_policy" "lakeformation_admin_policy" {
+resource "aws_iam_role_policy" "lakeformation_admin" {
   name = "LakeFormationAdmin"
   role = aws_iam_role.lakeformation_admin.id
 
@@ -104,6 +104,7 @@ resource "aws_iam_role_policy" "lakeformation_admin_policy" {
         Effect = "Allow"
         Action = "iam:PassRole"
         Resource = [
+          aws_iam_role.lakeformation_service_role.arn,
           aws_iam_role.lakeformation_workflow.arn,
           "arn:aws:iam::${local.account_id}:role/aws-service-role/lakeformation.amazonaws.com/AWSServiceRoleForLakeFormationDataAccess"
         ]
@@ -118,6 +119,119 @@ resource "aws_iam_role_policy" "lakeformation_admin_policy" {
         ]
         Resource = "*"
       }
+    ]
+  })
+}
+
+resource "aws_iam_role" "lakeformation_data_access" {
+  name = "LakeFormationDataAccessRole"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::${local.account_id}:root"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "lakeformation_data_access" {
+  for_each = toset([
+    "AmazonAthenaFullAccess"
+  ])
+  role       = aws_iam_role.lakeformation_data_access.name
+  policy_arn = "arn:aws:iam::aws:policy/${each.key}"
+}
+
+resource "aws_iam_role_policy" "lakeformation_data_access" {
+  name = "LakeFormationDataAccess"
+  role = aws_iam_role.lakeformation_data_access.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "lakeformation:GetDataAccess",
+          "glue:GetTable",
+          "glue:GetTables",
+          "glue:SearchTables",
+          "glue:GetDatabase",
+          "glue:GetDatabases",
+          "glue:GetPartitions",
+          "lakeformation:GetResourceLFTags",
+          "lakeformation:ListLFTags",
+          "lakeformation:GetLFTag",
+          "lakeformation:SearchTablesByLFTags",
+          "lakeformation:SearchDatabasesByLFTags"
+        ]
+        Resource = "*"
+      },
+    ]
+  })
+}
+
+resource "aws_iam_role" "lakeformation_service_role" {
+  name = "LakeFormationServiceRole"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "lakeformation.amazonaws.com"
+        }
+        Action = [
+          "sts:AssumeRole",
+          "sts:SetContext"
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "lakeformation_service_role" {
+  name = "LakeFormationServiceRole"
+  role = aws_iam_role.lakeformation_service_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:PutObject",
+          "s3:GetObject",
+          "s3:DeleteObject",
+          "s3:AbortMultipartUpload",
+          "s3:ListMultipartUploadParts"
+        ]
+        Resource = "${module.lakeformation_s3.s3_bucket_arn}/*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:ListBucket",
+          "s3:ListBucketMultipartUploads"
+        ]
+        Resource = module.lakeformation_s3.s3_bucket_arn
+      },
+      # {
+      #   Effect = "Allow"
+      #   Action = [
+      #     "logs:CreateLogStream",
+      #     "logs:CreateLogGroup",
+      #     "logs:PutLogEvents"
+      #   ]
+      #   Resource = "*"
+      # },
     ]
   })
 }
