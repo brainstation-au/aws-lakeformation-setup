@@ -8,7 +8,7 @@ resource "aws_iam_role" "lakeformation_workflow" {
       {
         Effect = "Allow"
         Principal = {
-          Service = "lakeformation.amazonaws.com"
+          Service = ["lakeformation.amazonaws.com", "glue.amazonaws.com"]
         }
         Action = "sts:AssumeRole"
       }
