@@ -33,6 +33,15 @@ module "lakeformation_s3" {
       }
 
       status = "Enabled"
+    },
+    {
+      id     = "empty-athena-results"
+      prefix = "output/"
+      status = "Enabled"
+
+      expiration = {
+        days = 1
+      }
     }
   ]
 }
