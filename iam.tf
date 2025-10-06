@@ -291,7 +291,7 @@ resource "aws_iam_role_policy" "athena_iam_idc_service_role" {
           "athena:GetDataCatalog"
         ],
         "Resource" : [
-          "arn:aws:athena:ap-southeast-2:442122590055:workgroup/iam-idc"
+          "arn:aws:athena:ap-southeast-2:${local.account_id}:workgroup/iam-idc"
         ],
         "Condition" : {
           "StringEquals" : {
@@ -355,7 +355,7 @@ resource "aws_iam_role_policy" "athena_iam_idc_service_role" {
           "s3:GetAccessGrantsInstanceForPrefix"
         ],
         "Resource" : [
-          "arn:aws:s3:ap-southeast-2:442122590055:access-grants/default"
+          "arn:aws:s3:ap-southeast-2:${local.account_id}:access-grants/default"
         ],
         "Condition" : {
           "StringEquals" : {

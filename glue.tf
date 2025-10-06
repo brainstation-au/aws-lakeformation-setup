@@ -21,7 +21,7 @@ resource "aws_glue_catalog_table" "raw_asic_business_names" {
   database_name = aws_glue_catalog_database.raw_data.name
 
   storage_descriptor {
-    location      = "s3://${module.lakeformation_s3.s3_bucket_id}/raw/asic/business-names/"
+    location      = "s3://${module.lakeformation_s3.s3_bucket_id}/data/raw/asic/business-names/"
     input_format  = "org.apache.hadoop.mapred.TextInputFormat"
     output_format = "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
 
